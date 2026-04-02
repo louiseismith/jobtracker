@@ -32,7 +32,7 @@ Usage:
   python main.py jobs-offer                List jobs with offers
   python main.py jobs-disappeared          List jobs that disappeared from job boards
   python main.py job <job_id> [--full]
-  python main.py ask <question>      Ask a question and retrieve relevant jobs via tools
+  python main.py ask <question> [--verbose]   Ask a question and retrieve relevant jobs via tools
   python main.py doctor [--model MODEL]
 """
 
@@ -993,7 +993,7 @@ def cmd_doctor(model_override: str | None = None):
         print("\nNo blocking issues found.")
 
 
-def cmd_ask(question: str):
+def cmd_ask(question: str, verbose: bool = False):
     """Ask a natural-language question and retrieve relevant jobs via tool-calling."""
     q = (question or "").strip()
     if not q:
@@ -1037,6 +1037,14 @@ def cmd_ask(question: str):
     )
     task = resume_note + f"Question: {q}"
 
+    def _traced(name, fn):
+        def wrapper(**kwargs):
+            if verbose:
+                args_str = ", ".join(f"{k}={v!r}" for k, v in kwargs.items())
+                print(f"  [tool] {name}({args_str})")
+            return fn(**kwargs)
+        return wrapper
+
     model = _get_ask_model()
     provider = _get_ask_provider()
     reply = agent_loop(
@@ -1046,10 +1054,10 @@ def cmd_ask(question: str):
         provider=provider,
         tools=[tool_search_jobs, tool_get_job_details, tool_get_briefing_data, tool_get_pipeline_data],
         tool_funcs={
-            "search_jobs": search_jobs,
-            "get_job_details": get_job_details,
-            "get_briefing_data": get_briefing_data,
-            "get_pipeline_data": get_pipeline_data,
+            "search_jobs":      _traced("search_jobs", search_jobs),
+            "get_job_details":  _traced("get_job_details", get_job_details),
+            "get_briefing_data": _traced("get_briefing_data", get_briefing_data),
+            "get_pipeline_data": _traced("get_pipeline_data", get_pipeline_data),
         },
     )
     print(reply)
@@ -1227,7 +1235,9 @@ def main():
         if len(args) < 2:
             print("Usage: python main.py ask <question>")
             return
-        cmd_ask(" ".join(args[1:]))
+        verbose = "--verbose" in args[1:]
+        question_args = [a for a in args[1:] if a != "--verbose"]
+        cmd_ask(" ".join(question_args), verbose=verbose)
 
     elif cmd == "doctor":
         model_override = None
