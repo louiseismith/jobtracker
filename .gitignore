@@ -1,0 +1,35 @@
+# Environment
+.venv/
+
+# Database
+*.db
+
+# Secrets
+.env
+
+# Claude
+.claude
+
+# Personal config (keep out of git)
+config/resume.docx
+config/resume.pdf
+config/resume_cache.txt
+config/preferences.md
+config/preferences.yaml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.pytest_cache/
+
+# Personal data
+companies
+test
+
+# Benchmark output
+benchmark_results/
+
+# Local planning notes
+PLAN.md

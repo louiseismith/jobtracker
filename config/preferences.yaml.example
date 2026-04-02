@@ -1,0 +1,59 @@
+auto_review_below: 7.0   # Jobs scoring below this are automatically marked 'reviewed' after scoring
+
+model: gpt-4.1           # Default scoring model
+provider: openai         # openai | ollama
+ask_model: claude-sonnet-4-6       # Model for interactive Q&A ("ask")
+ask_provider: anthropic            # Provider for ask_model
+reporter_model: claude-sonnet-4-6  # Model for Agent 3 (Reporter / daily briefing)
+reporter_provider: anthropic       # Provider for reporter_model
+
+geography:
+  allowed:
+    - New York
+    - NYC
+    - Boston
+    - Remote
+    # Add other cities/regions as needed
+
+industries:
+  priority_order:
+    - fusion energy
+    - robotics
+    - medtech
+    - smart manufacturing
+    # Add or reorder based on your preferences
+
+role_types:
+  include:
+    - systems engineer
+    - systems engineering
+    - technical program manager
+    - solutions engineer
+    - integration engineer
+    - test engineer
+    # Add role keywords relevant to your search
+  exclude_titles:
+    - intern
+    - internship
+    - marketing
+    - finance
+    - legal
+    - recruiter
+    - office manager
+  contract_signals:
+    - contract
+    - contractor
+    - temporary
+
+hard_excludes:
+  # Terms that trigger an exclusion flag on a job posting.
+  # Split into strong signals (flag alone) and generic terms
+  # (only flag when co-occurring with context terms).
+  exclude_signals:
+    - your_signal_here
+  exclude_strong_signals:
+    - your_strong_signal_here
+  exclude_generic_terms:
+    - your_generic_term_here
+  exclude_context_terms:
+    - your_context_term_here

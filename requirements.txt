@@ -1,0 +1,12 @@
+requests
+ollama
+openai
+pandas
+pyyaml
+tabulate
+python-docx
+pdfplumber
+playwright
+python-dotenv
+pytest
+anthropic
