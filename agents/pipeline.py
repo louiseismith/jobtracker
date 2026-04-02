@@ -3,10 +3,6 @@ agents/pipeline.py
 
 Pipeline: fetch → score → report
 
-  Step 1 (Fetcher)  — Python loop calling check_new_jobs per company
-  Step 2 (Scorer)   — Python call to score_all_new_jobs
-  Step 3 (Reporter) — LLM agent: reads briefing + pipeline data, writes briefing
-
 Reference patterns:
   dsai/08_function_calling/04_multiple_agents_with_function_calling.py
   hackathon/app/chatbot/agent.py

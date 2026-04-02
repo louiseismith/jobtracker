@@ -39,11 +39,16 @@ uv pip install -r requirements.txt
 
 5. Configure model settings:
 - Edit `config/preferences.yaml`
-- `model` + `provider` are used for scoring (`score`, `rescore`, scorer in `refresh`)
-- Scoring providers currently supported: `openai`, `ollama`
-- `ask_model` + `ask_provider` are used for `ask`
-- `reporter_model` + `reporter_provider` are used for briefing generation in `refresh`
-- `ask`/reporter providers supported: `openai`, `anthropic`, `ollama`
+- Scoring path (`score`, `rescore`, and the scorer inside `refresh`) uses:
+  - `model`
+  - `provider` (`openai` or `ollama`)
+- `ask` command uses:
+  - `ask_model` (defaults to `model` if omitted)
+  - `ask_provider` (defaults to `provider` if omitted)
+- Reporter inside `refresh` uses:
+  - `reporter_model` (defaults to `model` if omitted)
+  - `reporter_provider` (defaults to `provider` if omitted)
+- `ask`/`reporter` providers supported: `openai`, `anthropic`, `ollama`
 
 6. Set API keys in `.env` (depending on model)
 - Create `.env` in the repo root:
