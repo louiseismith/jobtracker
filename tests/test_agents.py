@@ -129,11 +129,11 @@ class TestCheckNewJobs:
 
 
 # ---------------------------------------------------------------------------
-# _score_one_job (direct Ollama call, mocked)
+# _score_one_job (provider call paths, mocked)
 # ---------------------------------------------------------------------------
 
 def _make_ollama_response(content: str):
-    """Create a mock ollama client.chat() response."""
+    """Create a mock Ollama client.chat() response payload."""
     mock = MagicMock()
     mock.model_dump.return_value = {"message": {"content": content}}
     return mock
@@ -386,7 +386,7 @@ class TestGetBriefingData:
 
 class TestAgentDispatcher:
     def _mock_tool_response(self, func_name, func_args):
-        """Simulate ollama client.chat() responding with a tool call."""
+        """Simulate a tool-call response payload from the provider layer."""
         mock = MagicMock()
         mock.model_dump.return_value = {
             "message": {

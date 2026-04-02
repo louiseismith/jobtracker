@@ -5,7 +5,7 @@ Multi-agent orchestration helpers, adapted from:
 dsai/08_function_calling/functions.py
 
 Changes from original:
-- Supports cloud model routing: OpenAI and Ollama Cloud models.
+- Supports cloud model routing: OpenAI, Anthropic, and Ollama Cloud models.
 - Model/provider loaded from config/preferences.yaml.
 - agent() and agent_run() accept an explicit tool_funcs dict for dispatching
   tool calls — the original used globals() which only finds functions defined
@@ -317,12 +317,13 @@ def agent(messages, model=None, provider=None, output="text", tools=None, tool_f
     model : str, optional
         Model name. Defaults to value in config/preferences.yaml.
     provider : str, optional
-        "openai" or "ollama". Defaults to config value (or inferred for explicit model overrides).
+        "openai", "anthropic", or "ollama". Defaults to config value
+        (or inferred for explicit model overrides).
     output : str
         "text" returns last text response or last tool output.
         "tools" returns the full tool_calls list with outputs attached.
     tools : list, optional
-        Ollama tool metadata dicts (the JSON schema definitions).
+        Tool schema dicts (OpenAI-compatible JSON schema definitions).
     tool_funcs : dict, optional
         {function_name: callable} — used to dispatch tool calls.
     all : bool
@@ -417,7 +418,7 @@ def agent_run(role, task, tools=None, tool_funcs=None, output="text", model=None
     task : str
         User message / task for the agent.
     tools : list, optional
-        Ollama tool metadata dicts.
+        Tool schema dicts.
     tool_funcs : dict, optional
         {function_name: callable} for tool dispatch.
     output : str
@@ -425,7 +426,7 @@ def agent_run(role, task, tools=None, tool_funcs=None, output="text", model=None
     model : str, optional
         Model name. Defaults to config/preferences.yaml.
     provider : str, optional
-        "openai" or "ollama". Defaults to config/preferences.yaml.
+        "openai", "anthropic", or "ollama". Defaults to config/preferences.yaml.
     """
     messages = [
         {"role": "system", "content": role},

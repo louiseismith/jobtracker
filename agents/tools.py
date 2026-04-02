@@ -1,7 +1,7 @@
 """
 agents/tools.py
 
-Tool functions and their Ollama metadata dicts.
+Tool functions and provider-agnostic tool schema dicts.
 
 Three tools:
   check_new_jobs(company_name)  — fetch + store new postings for a company
@@ -9,7 +9,7 @@ Three tools:
   get_briefing_data()           — return high-scoring jobs as a markdown table
 
 Each tool function is paired with a metadata dict (tool_*) that describes
-it to the Ollama model in the format required for function calling.
+it in OpenAI-compatible tool schema format for function calling.
 """
 
 import json
@@ -250,10 +250,10 @@ tool_check_new_jobs = {
 # Tool 2: score_all_new_jobs
 # ---------------------------------------------------------------------------
 
-def score_all_new_jobs(show_progress: bool = False) -> str:
+def score_all_new_jobs(show_progress: bool = True) -> str:
     """
     Score all unscored open jobs against the resume and preferences.
-    Makes one Ollama call per job. Returns a summary of scores assigned.
+    Makes one provider model call per job. Returns a summary of scores assigned.
     """
     jobs = db.get_new_unscored_jobs()
     if not jobs:
@@ -283,7 +283,7 @@ def score_all_new_jobs(show_progress: bool = False) -> str:
     results = []
     iterable = eligible
     if show_progress and len(eligible) > 0:
-        iterable = tqdm(eligible, total=len(eligible), desc="Agent 2 scoring", unit="job")
+        iterable = tqdm(eligible, total=len(eligible), desc="  Scoring", unit="job")
 
     for job in iterable:
 

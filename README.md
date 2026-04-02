@@ -243,5 +243,5 @@ Current suite covers:
 - `scrape` is detected as fallback but is not implemented in fetchers
 - SQLite DB file is created at `jobtracker.db` in project root
 - Scoring commands (`score`, `rescore`, scorer in `refresh`) currently support `openai` and `ollama` providers
-- `ask` and reporter can also use `anthropic` when configured
+- `ask` and reporter support `openai`, `anthropic`, or `ollama` (via `ask_provider`/`reporter_provider`)
 - For Ollama cloud models, set `OLLAMA_API_KEY` in `.env`

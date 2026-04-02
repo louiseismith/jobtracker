@@ -95,15 +95,16 @@ def run_pipeline(verbose: bool = True, run_brief: bool = True) -> str:
     if verbose:
         print("\nScorer: scoring new jobs...")
 
-    score_result = agent_run(
+    score_calls = agent_run(
         role="You are a job fit scorer. Call score_all_new_jobs to evaluate all new unscored job postings against the candidate's resume and preferences.",
         task=fetch_result,
         tools=[tool_score_all_new_jobs],
         tool_funcs={"score_all_new_jobs": score_all_new_jobs},
-        output="text",
+        output="tools",
         model=scorer_model,
         provider=scorer_provider,
     )
+    score_result = score_calls[0]["output"] if score_calls else "No new jobs scored."
 
     if verbose:
         print(score_result)

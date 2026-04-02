@@ -30,6 +30,7 @@ Usage:
   python main.py jobs-interviewing         List jobs in interviewing
   python main.py jobs-rejected             List rejected jobs
   python main.py jobs-offer                List jobs with offers
+  python main.py jobs-disappeared          List jobs that disappeared from job boards
   python main.py job <job_id> [--full]
   python main.py ask <question>      Ask a question and retrieve relevant jobs via tools
   python main.py doctor [--model MODEL]
@@ -61,10 +62,12 @@ from fetchers.detector import detect
 from agents.tools import (
     check_new_jobs,
     get_briefing_data,
+    get_pipeline_data,
     search_jobs,
     get_job_details,
     tool_search_jobs,
     tool_get_briefing_data,
+    tool_get_pipeline_data,
     tool_get_job_details,
     _score_one_job,
     _geo_score_eligible,
@@ -800,6 +803,63 @@ def cmd_jobs_new(company_filter: str | None = None):
     _cmd_jobs_by_state("new", company_filter)
 
 
+def cmd_jobs_disappeared(company_filter: str | None = None):
+    """List jobs that have disappeared from job boards."""
+    conn = get_connection()
+    if company_filter:
+        rows = conn.execute(
+            """
+            SELECT j.id, c.name AS company_name, j.title, j.location,
+                   j.ai_score, j.application_state, j.date_found
+            FROM jobs j
+            JOIN companies c ON j.company_id = c.id
+            WHERE j.job_state = 'disappeared' AND LOWER(c.name) LIKE ?
+            ORDER BY (j.ai_score IS NULL), j.ai_score DESC, j.date_found DESC
+            """,
+            (f"%{company_filter.lower()}%",),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            """
+            SELECT j.id, c.name AS company_name, j.title, j.location,
+                   j.ai_score, j.application_state, j.date_found
+            FROM jobs j
+            JOIN companies c ON j.company_id = c.id
+            WHERE j.job_state = 'disappeared'
+            ORDER BY (j.ai_score IS NULL), j.ai_score DESC, j.date_found DESC
+            """
+        ).fetchall()
+
+    if not rows:
+        msg = f"No disappeared jobs for company matching '{company_filter}'." if company_filter else "No disappeared jobs."
+        print(msg)
+        return
+
+    width = _term_width()
+    company_w  = max(14, min(26, int(width * 0.2)))
+    title_w    = max(20, min(48, int(width * 0.36)))
+    location_w = max(10, min(24, int(width * 0.18)))
+
+    table_rows = []
+    for r in rows:
+        table_rows.append({
+            "ID":       r["id"],
+            "Score":    f"{r['ai_score']:.1f}" if r["ai_score"] is not None else "—",
+            "Company":  r["company_name"],
+            "Title":    r["title"],
+            "AppState": r["application_state"],
+            "Location": r["location"] or "",
+            "Found":    r["date_found"][:10] if r["date_found"] else "",
+        })
+
+    print(tabulate(
+        table_rows,
+        headers="keys",
+        tablefmt="simple",
+        maxcolwidths=[6, 6, company_w, title_w, 12, location_w, 10],
+    ))
+
+
 def cmd_job(job_id: int, full: bool = False):
     """Show one job posting with detailed scoring context."""
     conn = get_connection()
@@ -984,11 +1044,12 @@ def cmd_ask(question: str):
         task=task,
         model=model,
         provider=provider,
-        tools=[tool_search_jobs, tool_get_job_details, tool_get_briefing_data],
+        tools=[tool_search_jobs, tool_get_job_details, tool_get_briefing_data, tool_get_pipeline_data],
         tool_funcs={
             "search_jobs": search_jobs,
             "get_job_details": get_job_details,
             "get_briefing_data": get_briefing_data,
+            "get_pipeline_data": get_pipeline_data,
         },
     )
     print(reply)
@@ -1126,7 +1187,7 @@ def main():
 
     elif cmd in ("jobs", "jobs-all", "jobs-new", "jobs-reviewed", "jobs-pipeline",
                  "jobs-applied", "jobs-skipped", "jobs-interviewing", "jobs-rejected",
-                 "jobs-offer"):
+                 "jobs-offer", "jobs-disappeared"):
         company_filter = None
         if "--company" in args:
             idx = args.index("--company")
@@ -1152,6 +1213,8 @@ def main():
             cmd_jobs_rejected(company_filter=company_filter)
         elif cmd == "jobs-offer":
             cmd_jobs_offer(company_filter=company_filter)
+        elif cmd == "jobs-disappeared":
+            cmd_jobs_disappeared(company_filter=company_filter)
 
     elif cmd == "job":
         if len(args) < 2 or not args[1].isdigit():
